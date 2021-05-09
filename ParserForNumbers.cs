@@ -3,141 +3,128 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-//парсер работает с числами до миллиона. На вход поступает строка с числом на англ. языке. Three thousand one hundred twenty-four
+//парсер работает с миллионными числами. На вход поступает строка с числом на англ. языке. Three thousand one hundred twenty-four
 public static class Parser
 {
-    static Dictionary<string, string> WordsS = new Dictionary<string, string>()
+    static int thousand = 0, million = 0, num = 0;
+    public static int ParserMethod(string s)
     {
-                { "one", "1" },
-                { "two", "2" },
-                { "three", "3" },
-                { "four", "4" },
-                { "five", "5" },
-                { "six", "6" },
-                { "seven", "7" },
-                { "eight", "8" },
-                { "nine", "9" },
-                { "ten", "10" },
-                { "eleven", "11" },
-                { "twelve" , "12" },
-                { "thirteen", "13" },
-                { "fourteen", "14" },
-                { "fifteen", "15" },
-                { "sixteen", "16" },
-                { "seventeen", "17" },
-                { "eighteen", "18" },
-                { "nineteen", "19" },
-                { "twenty", "20" },
-                { "million", "000000" },
-                { "hundred", "00" },
-                { "thousand", "000" },
-                { "thous", "000" },
-                { "thirty", "30" },
-                { "forty", "40" },
-                { "fifty", "50" },
-                { "sixty", "60" },
-                { "seventy", "70" },
-                { "eighty", "80" },
-                { "ninety", "90" },
-                { "zero", "0" },
-    };
-    //Основная рабочая функция
-    //Строка должна начинаться с маленькой буквы, двузначные числа, как 43 или 22, должны быть в таком формате: forty-eight, twenty-two
-    public static int ParseInt(string s)
-    {
-        //удаляем союз and
-        s = s.Replace("and", "");
-        try
+        //обновим поля
+        Refresh();
+        //удалим тере из двузначных чисел => twenty-four twenty four
+        s = s.Replace('-', ' ');
+        //разобьем строчку на слова, разделительный знак ' ' пробел
+        foreach (string word in s.Split(' '))
         {
-            //удаляем лишние пробелы
-            int IndexTemp = s.IndexOf("  ");
-            while (IndexTemp != -1)
+            //с помощью конструкции switch заполним поля класса thousand, million, num
+            switch (word)
             {
-                s = s.Remove(IndexTemp, 1);
-                IndexTemp = s.IndexOf("  ");
+                case "one":
+                    num += 1;
+                    break;
+                case "two":
+                    num += 2;
+                    break;
+                case "three":
+                    num += 3;
+                    break;
+                case "four":
+                    num += 4;
+                    break;
+                case "five":
+                    num += 5;
+                    break;
+                case "six":
+                    num += 6;
+                    break;
+                case "seven":
+                    num += 7;
+                    break;
+                case "eight":
+                    num += 8;
+                    break;
+                case "nine":
+                    num += 9;
+                    break;
+                case "ten":
+                    num += 10;
+                    break;
+                case "eleven":
+                    num += 11;
+                    break;
+                case "twelve":
+                    num += 12;
+                    break;
+                case "thirteen":
+                    num += 13;
+                    break;
+                case "fourteen":
+                    num += 14;
+                    break;
+                case "fifteen":
+                    num += 15;
+                    break;
+                case "sixteen":
+                    num += 15;
+                    break;
+                case "seventeen":
+                    num += 17;
+                    break;
+                case "eighteen":
+                    num += 18;
+                    break;
+                case "nineteen":
+                    num += 19;
+                    break;
+                case "twenty":
+                    num += 20;
+                    break;
+                case "thirty":
+                    num += 30;
+                    break;
+                case "forty":
+                    num += 40;
+                    break;
+                case "fifty":
+                    num += 50;
+                    break;
+                case "seventy":
+                    num += 70;
+                    break;
+                case "sixty":
+                    num += 60;
+                    break;
+                case "eighty":
+                    num += 80;
+                    break;
+                case "ninety":
+                    num += 90;
+                    break;
+                case "hundred":
+                    num *= 100;
+                    break;
+                    //если встречается "тысяча" переносим значение в "тысячу" и обнулаяем num
+                case "thousand":
+                    thousand = num;
+                    num = 0;
+                    break;
+                //если встречается "миллион" переносим значение в "миллион" и обнулаяем num
+                case "million":
+                    million = num;
+                    num = 0;
+                    break;
             }
         }
-        catch { }
-        //разбиваем строку на слова и заполняем массив строк
-        string[] words = s.Split(' ');
-        //создаем более производительный аналог класса String
-        StringBuilder num = new StringBuilder();
-        StringBuilder thousand = new StringBuilder();
-        StringBuilder million = new StringBuilder();
-        //в эту переменную будут записывать слова "thousend", "million", "hundred"
-        string prev = "";
-        //цикл пройдет по каждому слову массива
-        for (int i = 0; i < words.Length; i++)
-        {
-            //добавить число в котором нет '-', twenty подойдет, tweny-five не подойдет
-            if (words[i].IndexOf('-') == -1)
-            {
-                try
-                {
-                    num.Append(WordsS[words[i]]);
-                }
-                catch
-                { }
-            }
-            else
-            {
-                //записать в переменную число с '-'
-                int temp = Two_DigitNumbers(words[i]);
-                num.Append(temp);
-                try
-                {
-                    //попытаться добавить это число в словарь
-                    WordsS.Add(words[i], temp.ToString());
-                }
-                //если число уже добавлено - проигнорировать
-                catch (ArgumentException)
-                {
-
-                }
-            }
-            
-            if (words[i] == "thousand" || words[i] == "thous")
-            {
-                thousand = new StringBuilder(num.ToString());
-                num.Clear();
-            }
-            //если слово миллион, добавить значение в переменную
-            if (words[i] == "million")
-            {
-                million = new StringBuilder(num.ToString());
-                num.Clear();
-            }
-            //если предыдущее слово сотня и в числе есть десятки
-            if (prev == "hundred" && (Int32.Parse(WordsS[words[i]]) >= 10 && Int32.Parse(WordsS[words[i]]) <= 99))
-                num.Remove(num.Length - 2 - 2, 2);
-            //если предыдущее слово сотня и в числе только единицы
-            if (prev == "hundred" && (Int32.Parse(WordsS[words[i]]) >= 1 && Int32.Parse(WordsS[words[i]]) <= 9))
-                num.Remove(num.Length - 1 - 1, 1);
-            if (words[i] == "hundred" || words[i] == "thousand" || words[i] == "thous" || words[i] == "million")
-                prev = words[i];
-        }
-        //если в числе есть миллионы
-        if (million.Length != 0)
-        {
-            million.Remove(million.Length - num.Length, num.Length);
-            num.Insert(0, million);
-        }
-        //если в числе есть тысячи
-        if (thousand.Length != 0)
-        {
-            thousand.Remove(thousand.Length - num.Length, num.Length);
-            num.Insert(0, thousand);
-        }
-        return Int32.Parse(num.ToString());
+        //после прохождения цикла в полях будут сотни, тысячи и миллионы числа, остается только его собрать
+        //допустим число 10_003_123, в миллионах у нас 10, в тясячах 3, в num (сотнях) 123, собираем, 10*1000000+3*1000+123
+        return million * 1000000 + thousand * 1000 + num;
     }
-    //Метод который преобразовывает двузначные числа в цифры
-    static int Two_DigitNumbers(string s)
+    //функция обновляет статические значения если метод работает с массивом данных
+    static void Refresh()
     {
-        string[] words = s.Split('-');
-        StringBuilder num = new StringBuilder(WordsS[words[0]]);
-        num.Remove(1, 1);
-        num.Append(WordsS[words[1]]);
-        return Int32.Parse(num.ToString());
+        thousand = 0;
+        million = 0;
+        num = 0;
     }
 }
 
